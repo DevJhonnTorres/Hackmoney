@@ -82,6 +82,8 @@ const AUCTION_ABI = [
   "function nftContract() view returns (address)",
   "function tokenId() view returns (uint256)",
   "function floorPrice() view returns (uint256)",
+  "function participationFee() view returns (uint256)",
+  "function minBidIncrement() view returns (uint256)",
   "function currentPhase() view returns (uint8)",
   "function currentLeader() view returns (address)",
   "function currentHighBid() view returns (uint256)",
@@ -89,8 +91,10 @@ const AUCTION_ABI = [
   "function finalized() view returns (bool)",
   "function paused() view returns (bool)",
   "function userBids(address) view returns (uint256)",
+  "function hasPaidFee(address) view returns (bool)",
   "function getTimeRemaining() view returns (uint256)",
   "function getBidderCount() view returns (uint256)",
+  "function payParticipationFee()",
   "function placeBid(uint256)",
   "function withdrawBid()",
 ];
@@ -445,11 +449,13 @@ function AuctionBidPageContent() {
     try {
       const auction = new ethers.Contract(auctionAddress, AUCTION_ABI, rpcProvider);
 
-      const [phase, leader, highBid, floorPrice, winner, finalized, paused, timeRemaining, bidderCount] = await Promise.all([
+      const [phase, leader, highBid, floorPrice, participationFee, minIncrement, winner, finalized, paused, timeRemaining, bidderCount] = await Promise.all([
         auction.currentPhase(),
         auction.currentLeader(),
         auction.currentHighBid(),
         auction.floorPrice(),
+        auction.participationFee().catch(() => BigInt(0)),
+        auction.minBidIncrement().catch(() => BigInt(0)),
         auction.winner(),
         auction.finalized(),
         auction.paused(),
@@ -461,6 +467,8 @@ function AuctionBidPageContent() {
       setAuctionLeader(leader);
       setAuctionHighBid(highBid);
       setAuctionFloorPrice(floorPrice);
+      setAuctionParticipationFee(participationFee);
+      setAuctionMinIncrement(minIncrement);
       setAuctionWinner(winner);
       setAuctionFinalized(finalized);
       setAuctionPaused(paused);
@@ -469,10 +477,12 @@ function AuctionBidPageContent() {
 
       // User-specific data
       if (walletAddress) {
-        const [userBidAmount] = await Promise.all([
+        const [userBidAmount, paidFee] = await Promise.all([
           auction.userBids(walletAddress),
+          auction.hasPaidFee(walletAddress).catch(() => false),
         ]);
         setUserBid(userBidAmount);
+        setHasPaidParticipationFee(paidFee);
 
         // USDC balance and allowance
         const usdc = new ethers.Contract(chainConfig.usdc, ERC20_ABI, rpcProvider);
@@ -516,6 +526,44 @@ function AuctionBidPageContent() {
     refreshData();
   };
 
+  // ============ PAY PARTICIPATION FEE ============
+
+  const handlePayParticipationFee = async () => {
+    if (!hasSession) {
+      router.push("/auth");
+      return;
+    }
+
+    if (auctionParticipationFee === null || auctionParticipationFee === BigInt(0)) {
+      pushToast({ type: "info", title: "No participation fee required" });
+      return;
+    }
+
+    // Check USDC balance
+    if (userUsdcBalance !== null && auctionParticipationFee > userUsdcBalance) {
+      pushToast({ type: "error", title: `Insufficient balance. Need ${formatUsdc(auctionParticipationFee)} USDC` });
+      return;
+    }
+
+    // Check allowance
+    if (userUsdcAllowance !== null && auctionParticipationFee > userUsdcAllowance) {
+      pushToast({ type: "error", title: "Please approve USDC first" });
+      return;
+    }
+
+    const result = await runContractTx(
+      "Pay Participation Fee",
+      auctionAddress,
+      AUCTION_ABI,
+      "payParticipationFee",
+      []
+    );
+
+    if (result) {
+      await refreshData();
+    }
+  };
+
   // ============ PLACE BID ============
 
   const handlePlaceBid = async () => {
@@ -523,6 +571,12 @@ function AuctionBidPageContent() {
 
     if (!hasSession) {
       router.push("/auth");
+      return;
+    }
+
+    // Check participation fee
+    if (auctionParticipationFee !== null && auctionParticipationFee > BigInt(0) && !hasPaidParticipationFee) {
+      setBidError(`You must pay the participation fee of ${formatUsdc(auctionParticipationFee)} USDC first.`);
       return;
     }
 
@@ -700,6 +754,16 @@ function AuctionBidPageContent() {
                 </div>
 
                 <div className={`rounded-2xl ${ui.cardInner} p-4`}>
+                  <div className="text-xs text-white/50 mb-1">Participation Fee</div>
+                  <div className="text-sm font-semibold">{formatUsdc(auctionParticipationFee)} USDC</div>
+                </div>
+
+                <div className={`rounded-2xl ${ui.cardInner} p-4`}>
+                  <div className="text-xs text-white/50 mb-1">Min Increment</div>
+                  <div className="text-sm font-semibold">{auctionMinIncrement ? `${auctionMinIncrement}%` : "-"}</div>
+                </div>
+
+                <div className={`rounded-2xl ${ui.cardInner} p-4`}>
                   <div className="text-xs text-white/50 mb-1">Total Bidders</div>
                   <div className="text-sm font-semibold">{auctionBidderCount ?? "-"}</div>
                 </div>
@@ -755,6 +819,40 @@ function AuctionBidPageContent() {
                 </div>
               ) : (
                 <>
+                  {/* Participation Fee Warning */}
+                  {auctionParticipationFee !== null && auctionParticipationFee > BigInt(0) && !hasPaidParticipationFee && (
+                    <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-full bg-yellow-500/20 p-2">
+                          <IconShield className="h-5 w-5 text-yellow-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-yellow-400">Participation Fee Required</div>
+                          <div className="text-xs text-yellow-300/80 mt-1">
+                            Pay {formatUsdc(auctionParticipationFee)} USDC to participate in this auction
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handlePayParticipationFee}
+                        disabled={isLoading}
+                        className="mt-3 w-full rounded-lg bg-yellow-500 px-4 py-2 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-50"
+                      >
+                        {isLoading ? "Processing..." : `Pay ${formatUsdc(auctionParticipationFee)} USDC Fee`}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Fee Paid Status */}
+                  {hasPaidParticipationFee && auctionParticipationFee !== null && auctionParticipationFee > BigInt(0) && (
+                    <div className="mb-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                      <div className="flex items-center gap-2 text-sm text-emerald-400">
+                        <IconShield className="h-4 w-4" />
+                        <span className="font-semibold">Participation fee paid ✓</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Your current bid */}
                   {userBid !== null && userBid > BigInt(0) && (
                     <div className="mb-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4">

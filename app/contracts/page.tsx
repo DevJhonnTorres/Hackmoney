@@ -94,6 +94,8 @@ const AUCTION_ABI = [
   "function nftContract() view returns (address)",
   "function tokenId() view returns (uint256)",
   "function floorPrice() view returns (uint256)",
+  "function participationFee() view returns (uint256)",
+  "function minBidIncrement() view returns (uint256)",
   "function currentPhase() view returns (uint8)",
   "function currentLeader() view returns (address)",
   "function currentHighBid() view returns (uint256)",
@@ -218,6 +220,9 @@ export default function AdminPage() {
   const [auctionPhase, setAuctionPhase] = useState<number | null>(null);
   const [auctionLeader, setAuctionLeader] = useState("");
   const [auctionHighBid, setAuctionHighBid] = useState<bigint | null>(null);
+  const [auctionFloorPrice, setAuctionFloorPrice] = useState<bigint | null>(null);
+  const [auctionParticipationFee, setAuctionParticipationFee] = useState<bigint | null>(null);
+  const [auctionMinIncrement, setAuctionMinIncrement] = useState<bigint | null>(null);
   const [auctionWinner, setAuctionWinner] = useState("");
   const [auctionFinalized, setAuctionFinalized] = useState<boolean | null>(null);
   const [auctionPaused, setAuctionPaused] = useState<boolean | null>(null);
@@ -377,11 +382,14 @@ export default function AdminPage() {
       const auctionAddr = selectedAuction || chainConfig.contracts.AuctionManager;
       if (auctionAddr) {
         const auction = new ethers.Contract(auctionAddr, AUCTION_ABI, rpcProvider);
-        const [owner, phase, leader, highBid, winner, finalized, paused] = await Promise.all([
+        const [owner, phase, leader, highBid, floorPrice, participationFee, minIncrement, winner, finalized, paused] = await Promise.all([
           auction.owner(),
           auction.currentPhase(),
           auction.currentLeader(),
           auction.currentHighBid(),
+          auction.floorPrice().catch(() => BigInt(0)),
+          auction.participationFee().catch(() => BigInt(0)),
+          auction.minBidIncrement().catch(() => BigInt(0)),
           auction.winner(),
           auction.finalized(),
           auction.paused(),
@@ -390,6 +398,9 @@ export default function AdminPage() {
         setAuctionPhase(Number(phase));
         setAuctionLeader(leader);
         setAuctionHighBid(highBid);
+        setAuctionFloorPrice(floorPrice);
+        setAuctionParticipationFee(participationFee);
+        setAuctionMinIncrement(minIncrement);
         setAuctionWinner(winner);
         setAuctionFinalized(finalized);
         setAuctionPaused(paused);
@@ -974,6 +985,18 @@ export default function AdminPage() {
                 <div className="flex justify-between">
                   <span className="text-white/50">High Bid</span>
                   <span className="text-cyan-400">{formatUsdc(auctionHighBid)} USDC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Floor Price</span>
+                  <span className="text-emerald-400">{formatUsdc(auctionFloorPrice)} USDC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Participation Fee</span>
+                  <span className="text-yellow-400">{formatUsdc(auctionParticipationFee)} USDC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Min Increment</span>
+                  <span className="text-purple-400">{auctionMinIncrement ? `${auctionMinIncrement}%` : "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/50">Time Remaining</span>
