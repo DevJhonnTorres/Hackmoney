@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ethers } from "ethers";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
@@ -255,7 +255,7 @@ const formatTimeRemaining = (seconds: bigint | null) => {
 
 // ============ COMPONENT ============
 
-export default function AuctionBidPage() {
+function AuctionBidPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -990,5 +990,26 @@ export default function AuctionBidPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function AuctionLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-[#07090A] text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent mb-4" />
+        <div className="text-lg opacity-80">Loading auction...</div>
+      </div>
+    </div>
+  );
+}
+
+// Default export with Suspense boundary
+export default function AuctionBidPage() {
+  return (
+    <Suspense fallback={<AuctionLoadingFallback />}>
+      <AuctionBidPageContent />
+    </Suspense>
   );
 }
