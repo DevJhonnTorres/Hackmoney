@@ -351,7 +351,7 @@ export default function AuthEntryPage() {
         persistWallet(nextWallets[0]);
         if (!redirectOnceRef.current) {
           redirectOnceRef.current = true;
-          router.push("/marketplace");
+          router.push("/cuenta");
         }
         if (options?.source === "afterCreate") {
           setStatus("Wallet created successfully. Ready to use.");

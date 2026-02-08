@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 import { formatUnits, isAddress, parseUnits } from "@/lib/circle/evm";
+import Header from "../components/Header";
 
 type Wallet = {
   id: string;
@@ -499,25 +500,21 @@ export default function CuentaPage() {
 
   return (
     <div className={`min-h-screen text-white ${ui.bg}`}>
+      <Header />
+
       <div className="pointer-events-none fixed inset-0 opacity-60">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(45,212,212,0.10),transparent_45%),radial-gradient(circle_at_80%_40%,rgba(255,255,255,0.05),transparent_55%),radial-gradient(circle_at_20%_70%,rgba(45,212,212,0.06),transparent_60%)]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-10">
-        <div className="w-full max-w-[760px]">
-          <div className="mb-6 flex items-center justify-between">
-            <Link
-              href="/marketplace"
-              className="rounded-full border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-white/70 hover:bg-white/[0.06] transition"
-            >
-              ← Volver
-            </Link>
+      <div className="relative mx-auto max-w-5xl px-4 py-10">
+        <div className="w-full max-w-[760px] mx-auto">
+          <div className="mb-6 flex items-center justify-end">
             <button
               type="button"
               onClick={handleLogout}
               className="rounded-full border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-white/70 hover:bg-white/[0.06] transition"
             >
-              Cerrar sesión
+              Cerrar sesion
             </button>
           </div>
 

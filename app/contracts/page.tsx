@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ethers } from "ethers";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
+import Header from "../components/Header";
 
 const DEFAULT_RPC_BY_CHAIN: Record<number, string> = {
   84532: "https://sepolia.base.org",
@@ -28,33 +29,33 @@ const CHAIN_DEPLOYMENTS: Record<
     chainId: 8453,
     chainName: "Base Mainnet",
     explorer: "https://base.blockscout.com",
-    timestamp: "2026-02-08T04:15:46.408Z",
+    timestamp: "2026-02-08T15:50:30.322Z",
     contracts: {
-      HouseNFT: "0x335845ef4f622145d963c9f39d6ff1b60757fee4",
-      AuctionFactory: "0x57cdf2cdeae3f54e598e8def3583a251fec0eaf7",
-      AuctionManager: "0xe6afb32fdd1c03edd3dc2f1b0037c3d4580d6dca",
+      HouseNFT: "0x44b659c474d1bcb0e6325ae17c882994d772e471",
+      AuctionFactory: "0x1d5854ef9b5fd15e1f477a7d15c94ea0e795d9a5",
+      AuctionManager: "0x24220aeb9360aaf896c99060c53332258736e30d",
     },
   },
   84532: {
     chainId: 84532,
     chainName: "Base Sepolia",
     explorer: "https://base-sepolia.blockscout.com",
-    timestamp: "2026-02-08T04:15:46.408Z",
+    timestamp: "2026-02-08T15:50:30.322Z",
     contracts: {
-      HouseNFT: "0xe23157f7d8ad43bfcf7aaff64257fd0fa17177d6",
-      AuctionFactory: "0xd3390e5fec170d7577c850f5687a6542b66a4bbd",
-      AuctionManager: "0x3347f6a853e04281daa0314f49a76964f010366f",
+      HouseNFT: "0x3911826c047726de1881f5518faa06e06413aba6",
+      AuctionFactory: "0xd13e24354d6e9706b4bc89272e31374ec71a2e75",
+      AuctionManager: "0x4aee0c5afe353fb9fa111e0b5221db715b53cb10",
     },
   },
   5042002: {
     chainId: 5042002,
     chainName: "Arc Testnet",
     explorer: "https://testnet.arcscan.app",
-    timestamp: "2026-02-08T04:15:46.403Z",
+    timestamp: "2026-02-08T15:50:30.318Z",
     contracts: {
-      HouseNFT: "0x335845ef4f622145d963c9f39d6ff1b60757fee4",
-      AuctionFactory: "0x57cdf2cdeae3f54e598e8def3583a251fec0eaf7",
-      AuctionManager: "0xe6afb32fdd1c03edd3dc2f1b0037c3d4580d6dca",
+      HouseNFT: "0x6bb77d0b235d4d27f75ae0e3a4f465bf8ac91c0b",
+      AuctionFactory: "0x88cc60b8a6161758b176563c78abeb7495d664d1",
+      AuctionManager: "0x2fbaed3a30a53bd61676d9c5f46db5a73f710f53",
     },
   },
 };
@@ -1092,8 +1093,10 @@ export default function ContractsPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <Header />
+
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Contracts Dashboard</h1>
             <p className="text-sm text-white/60">AuctionFactory · AuctionManager · HouseNFT</p>
@@ -1125,7 +1128,7 @@ export default function ContractsPage() {
               {isRefreshing ? "Refrescando..." : "Refrescar"}
             </button>
           </div>
-        </header>
+        </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
           <div className="rounded-full border border-white/10 px-3 py-1 text-white/70">

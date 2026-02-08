@@ -1,0 +1,201 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+const navItems: NavItem[] = [
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "My Account", href: "/cuenta" },
+  { label: "Admin", href: "/contracts" },
+];
+
+export default function Header() {
+  const pathname = usePathname();
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setWalletAddress(window.localStorage.getItem("w3s_wallet_address"));
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isActive = (href: string) => pathname === href;
+
+  return (
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        background: isScrolled ? "rgba(0,0,0,0.92)" : "rgba(0,0,0,0.75)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        transition: "background 200ms ease",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "12px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+        }}
+      >
+        {/* Logo */}
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            textDecoration: "none",
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #2DD4D4 0%, #0ea5e9 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 900,
+              fontSize: 16,
+              color: "black",
+            }}
+          >
+            Z
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, color: "white", fontSize: 16, letterSpacing: -0.3 }}>
+              <span style={{ color: "#67e8f9" }}>ZBrick</span>
+            </div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: -2 }}>
+              Real Estate Auctions
+            </div>
+          </div>
+        </Link>
+
+        {/* Nav */}
+        <nav
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginLeft: 24,
+          }}
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none",
+                color: isActive(item.href) ? "#0f172a" : "rgba(255,255,255,0.75)",
+                background: isActive(item.href)
+                  ? "#67e8f9"
+                  : "transparent",
+                border: isActive(item.href)
+                  ? "none"
+                  : "1px solid transparent",
+                transition: "all 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive(item.href)) {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                  e.currentTarget.style.color = "white";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive(item.href)) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                }
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Auth / User */}
+        {walletAddress ? (
+          <Link
+            href="/cuenta"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 14px",
+              borderRadius: 999,
+              border: "1px solid rgba(103,232,249,0.3)",
+              background: "rgba(103,232,249,0.08)",
+              textDecoration: "none",
+              color: "#67e8f9",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#22c55e",
+              }}
+            />
+            {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+          </Link>
+        ) : (
+          <Link
+            href="/auth"
+            style={{
+              padding: "10px 20px",
+              borderRadius: 999,
+              background: "#2DD4D4",
+              color: "#0f172a",
+              fontSize: 13,
+              fontWeight: 700,
+              textDecoration: "none",
+              transition: "transform 150ms ease, box-shadow 150ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 20px rgba(45,212,212,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            Sign In
+          </Link>
+        )}
+      </div>
+    </header>
+  );
+}

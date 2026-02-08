@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import Header from "../components/Header";
 
 interface Property {
   id: string;
@@ -199,124 +200,41 @@ export default function MarketplacePage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "black", color: "white" }}>
-      {/* ====== HEADER (sticky) ====== */}
-      <header
+      <Header />
+
+      {/* ====== LIVE BUTTON (floating) ====== */}
+      <div
         style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(10px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          position: "fixed",
+          top: 80,
+          right: 20,
+          zIndex: 40,
         }}
       >
-        <div
+        <button
+          type="button"
+          onClick={() => router.push("/pujas")}
+          title="Entrar a Live"
           style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "14px 16px",
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
-            gap: 12,
+            gap: 10,
+            padding: "10px 14px",
+            borderRadius: 999,
+            border: "1px solid rgba(255,255,255,0.14)",
+            background: liveExploded ? "rgba(239, 68, 68, 0.95)" : "rgba(255,255,255,0.04)",
+            color: "white",
+            fontWeight: 900,
+            cursor: "pointer",
           }}
+          className={`liveBtn ${liveExploded ? "liveBtnBig" : ""}`}
         >
-          {/* Brand */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <div style={{ fontWeight: 800, letterSpacing: 0.2 }}>
-              <span style={{ color: "#67e8f9" }}>Casa</span>{" "}
-              <span style={{ color: "white" }}>Marketplace</span>
-            </div>
-            <div style={{ fontSize: 12, color: "#9ca3af" }}>
-              Mercado directo · subastas · licitaciones
-            </div>
-          </div>
-
-          <div style={{ flex: 1 }} />
-
-          {/* LIVE button (animado) */}
-          <button
-            type="button"
-            onClick={() => router.push("/pujas")}
-            title="Entrar a Live"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 14px",
-              borderRadius: 999,
-              border: "1px solid rgba(255,255,255,0.14)",
-              background: liveExploded ? "rgba(239, 68, 68, 0.95)" : "rgba(255,255,255,0.04)",
-              color: "white",
-              fontWeight: 900,
-              cursor: "pointer",
-            }}
-            className={`liveBtn ${liveExploded ? "liveBtnBig" : ""}`}
-          >
-            <span className="liveDot" aria-hidden="true" />
-            <span style={{ letterSpacing: 0.6 }}>
-              {liveExploded ? "GRANDE LIVE" : "LIVE"}
-            </span>
-          </button>
-
-          {/* Volver */}
-          <Link
-            href="/subastas"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "10px 14px",
-              borderRadius: 999,
-              border: "1px solid rgba(103,232,249,0.45)",
-              color: "#67e8f9",
-              textDecoration: "none",
-              fontWeight: 800,
-              background: "rgba(103,232,249,0.06)",
-            }}
-          >
-            Volver a Subastas →
-          </Link>
-
-          {/* User / Cuenta */}
-          <div className="userMenu" style={{ position: "relative" }}>
-            <button
-              type="button"
-              onClick={handleAccountClick}
-              title={walletAddress ? "Mi wallet" : "Iniciar sesión"}
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.14)",
-                background: "rgba(255,255,255,0.04)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "inherit",
-                cursor: "pointer",
-              }}
-            >
-              <UserAvatarIcon />
-            </button>
-
-            {walletAddress && (
-              <div className="walletPreview">
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
-                  Wallet
-                </div>
-                <div style={{ fontSize: 12, color: "white", wordBreak: "break-all" }}>
-                  {walletAddress}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
-                  Balance USDC
-                </div>
-                <div style={{ fontSize: 12, color: "white" }}>
-                  {walletBalance ?? "—"}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+          <span className="liveDot" aria-hidden="true" />
+          <span style={{ letterSpacing: 0.6 }}>
+            {liveExploded ? "GRANDE LIVE" : "LIVE"}
+          </span>
+        </button>
+      </div>
 
       {/* ====== CONTENT ====== */}
       <section style={{ padding: "22px 16px" }}>
